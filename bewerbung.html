@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Team Bewerbung – Max Berger</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#09090f;color:#8888a8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(88,101,242,.08),transparent 65%);pointer-events:none}
+.box{background:#0f1018;border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:40px;max-width:500px;width:100%;position:relative;box-shadow:0 40px 80px rgba(0,0,0,.7)}
+.box::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:55%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent)}
+.logo-wrap{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.logo-img{width:36px;height:36px;border-radius:9px;object-fit:cover;border:1px solid rgba(255,255,255,.1)}
+.logo-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#f0f0fa}
+.title{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;color:#f0f0fa;margin-bottom:6px;letter-spacing:-.4px}
+.sub{font-size:13.5px;color:#545470;margin-bottom:28px;line-height:1.6}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:11.5px;font-weight:700;color:#8888a8;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.form-input,.form-textarea{width:100%;padding:11px 14px;background:#14151f;border:1px solid rgba(255,255,255,.08);border-radius:10px;color:#f0f0fa;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
+.form-textarea{resize:vertical;min-height:90px}
+.form-input:focus,.form-textarea:focus{border-color:#5865f2}
+.submit-btn{width:100%;padding:13px;background:#5865f2;color:#fff;font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;border-radius:11px;border:none;cursor:pointer;transition:all .2s;margin-top:8px;box-shadow:0 4px 16px rgba(88,101,242,.35)}
+.submit-btn:hover{background:#4752c4;transform:translateY(-1px);box-shadow:0 8px 24px rgba(88,101,242,.5)}
+.success{display:none;text-align:center;padding:20px 0}
+.success i{font-size:48px;color:#34d399;margin-bottom:16px}
+.success h3{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#f0f0fa;margin-bottom:8px}
+.success p{font-size:14px;color:#545470}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo-wrap">
+    <img class="logo-img" src="berger.png" alt="MB" onerror="this.style.display='none'">
+    <span class="logo-name">Max Berger Community</span>
+  </div>
+  <div id="form-area">
+    <div class="title">Team Bewerbung</div>
+    <p class="sub">Fülle das Formular aus, um dich für eine Position in unserem Team zu bewerben.</p>
+    <div class="form-group"><label class="form-label">Dein Name</label><input class="form-input" id="f-name" placeholder="Vollständiger Name"></div>
+    <div class="form-group"><label class="form-label">Discord Username</label><input class="form-input" id="f-discord" placeholder="z.B. maxberger123"></div>
+    <div class="form-group"><label class="form-label">Alter</label><input class="form-input" id="f-age" placeholder="Dein Alter" type="number" min="13" max="99"></div>
+    <div class="form-group"><label class="form-label">Warum möchtest du ins Team?</label><textarea class="form-textarea" id="f-reason" placeholder="Erkläre uns, warum du Teil des Teams sein möchtest..."></textarea></div>
+    <div class="form-group"><label class="form-label">Erfahrung</label><textarea class="form-textarea" id="f-exp" placeholder="Welche Erfahrungen bringst du mit?"></textarea></div>
+    <button class="submit-btn" onclick="submitBew()"><i class="fa-solid fa-paper-plane"></i> Bewerbung absenden</button>
+  </div>
+  <div class="success" id="success-area">
+    <i class="fa-solid fa-circle-check"></i>
+    <h3>Bewerbung eingegangen!</h3>
+    <p>Deine Bewerbung wurde erfolgreich übermittelt. Unser Team wird sich bei dir melden!</p>
+  </div>
+</div>
+<script>
+function submitBew(){
+  const name=document.getElementById('f-name').value.trim();
+  const discord=document.getElementById('f-discord').value.trim();
+  const age=document.getElementById('f-age').value.trim();
+  const reason=document.getElementById('f-reason').value.trim();
+  const experience=document.getElementById('f-exp').value.trim();
+  if(!name||!discord||!age||!reason||!experience){alert('Bitte alle Felder ausfüllen!');return}
+  const data={name,discord,age,reason,experience};
+  const encoded=btoa(JSON.stringify(data));
+  // Send to panel
+  fetch('/api/bewerbung',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+    .catch(()=>{});
+  document.getElementById('form-area').style.display='none';
+  document.getElementById('success-area').style.display='block';
+}
+</script>
+</body>
+</html>
