@@ -20,7 +20,18 @@ app.use(session({
   cookie: { maxAge: 86400000 }
 }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Statische Dateien aus Root-Verzeichnis servieren
+app.use(express.static(path.join(__dirname)));
+
+// Root-Route → publicpanel.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'publicpanel.html'));
+});
+
+// Auch /panel.html → publicpanel.html (für Redirects nach Login)
+app.get('/panel.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'publicpanel.html'));
+});
 
 app.get('/auth/discord', (req, res) => {
   const url = new URLSearchParams({
@@ -48,6 +59,7 @@ app.get('/auth/callback', async (req, res) => {
       }),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
+
     const { access_token, token_type } = token.data;
     const auth = `${token_type} ${access_token}`;
 
@@ -58,6 +70,7 @@ app.get('/auth/callback', async (req, res) => {
 
     let hasAccess = false;
     let roles = [];
+
     try {
       const memberRes = await axios.get(
         `https://discord.com/api/users/@me/guilds/${SERVER_ID}/member`,
