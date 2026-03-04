@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Team Panel – Max Berger</title>
+<link rel="icon" type="image/png" href="https://werner-max.de/berger.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090f;
+  --bg2:#0f1018;
+  --bg3:#14151f;
+  --bg4:#1a1b28;
+  --bdr:rgba(255,255,255,.06);
+  --bdr2:rgba(255,255,255,.11);
+  --text:#f0f0fa;
+  --muted:#545470;
+  --muted2:#8888a8;
+  --blue:#5865f2;
+  --blue2:#4752c4;
+  --accent:#818cf8;
+  --green:#34d399;
+  --red:#f87171;
+  --yellow:#fbbf24;
+  --sidebar:220px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--muted2);-webkit-font-smoothing:antialiased}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+#login-screen::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 30%,rgba(88,101,242,.1),transparent 65%);
+  pointer-events:none;
+}
+.login-box{
+  background:rgba(15,16,24,.95);border:1px solid var(--bdr2);
+  border-radius:20px;padding:48px 40px 40px;max-width:420px;width:100%;text-align:center;
+  position:relative;
+  box-shadow:0 40px 80px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.04) inset;
+  animation:loginIn .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes loginIn{from{opacity:0;transform:scale(.93) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.login-box::before{
+  content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  width:60%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+}
+.lb-logo-wrap{position:relative;display:inline-flex;margin-bottom:26px}
+.lb-glow{position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(88,101,242,.2),transparent 65%);animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+.lb-logo{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.12);position:relative;z-index:1}
+.lb-title{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;color:var(--text);margin-bottom:8px;letter-spacing:-.5px}
+.lb-sub{font-size:13.5px;color:var(--muted2);line-height:1.7;margin-bottom:30px}
+.lb-err{display:none;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:10px;padding:11px 14px;margin-bottom:18px;font-size:13px;color:var(--red);align-items:center;gap:8px}
+.lb-err.show{display:flex}
+.lb-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  padding:13px 20px;background:var(--blue);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;border-radius:12px;
+  text-decoration:none;border:none;cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 20px rgba(88,101,242,.4),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.lb-btn:hover{background:var(--blue2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(88,101,242,.55)}
+.lb-btn i{font-size:17px}
+.lb-sep{display:flex;align-items:center;gap:10px;margin:22px 0 16px}
+.lb-sep-l{flex:1;height:1px;background:var(--bdr)}
+.lb-sep span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.lb-note{font-size:12.5px;color:var(--muted);line-height:1.65}
+.lb-note a{color:var(--accent);text-decoration:none}
+.lb-note a:hover{text-decoration:underline}
+
+/* ── APP LAYOUT ── */
+#app{display:none;height:100vh;flex-direction:column}
+#app.show{display:flex}
+
+/* Top bar */
+.topbar{
+  height:52px;flex-shrink:0;
+  background:var(--bg2);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+  z-index:100;
+}
+.tb-left{display:flex;align-items:center;gap:12px}
+.tb-logo{width:28px;height:28px;border-radius:7px;object-fit:cover;border:1px solid var(--bdr2)}
+.tb-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.2px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(88,101,242,.2);color:var(--accent);text-transform:uppercase;letter-spacing:.8px}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-user{display:flex;align-items:center;gap:8px}
+.tb-av{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1.5px solid var(--bdr2)}
+.tb-uname{font-size:13px;font-weight:600;color:var(--text)}
+.tb-logout{
+  width:30px;height:30px;background:rgba(255,255,255,.04);border:1px solid var(--bdr);
+  border-radius:7px;color:var(--muted2);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.tb-logout:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--red)}
+
+/* Main area */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--bdr);
+  display:flex;flex-direction:column;overflow-y:auto;padding:16px 10px;
+}
+.sb-section{margin-bottom:22px}
+.sb-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px;margin-bottom:6px}
+.sb-item{
+  display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;
+  color:var(--muted2);font-size:13.5px;font-weight:500;cursor:pointer;
+  transition:all .15s;text-decoration:none;position:relative;
+}
+.sb-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.sb-item.active{color:var(--text);background:rgba(88,101,242,.12)}
+.sb-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--blue);border-radius:99px}
+.sb-item i{font-size:14px;width:16px;text-align:center}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--blue);color:#fff}
+
+/* Content */
+.content{flex:1;overflow-y:auto;padding:28px 32px;background:var(--bg)}
+
+/* ── VIEWS ── */
+.view{display:none}
+.view.active{display:block;animation:viewIn .2s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.view-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.view-sub{font-size:13px;color:var(--muted2);margin-top:2px}
+
+/* Cards grid */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.s-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;padding:20px}
+.s-card-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px}
+.s-card-lbl{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.s-card-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px}
+.ico-blue{background:rgba(88,101,242,.12);color:var(--accent)}
+.ico-green{background:rgba(52,211,153,.1);color:var(--green)}
+.ico-yellow{background:rgba(251,191,36,.1);color:var(--yellow)}
+.ico-red{background:rgba(248,113,113,.1);color:var(--red)}
+
+/* Action button */
+.act-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 18px;background:var(--blue);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+  border-radius:9px;border:none;cursor:pointer;transition:all .16s;
+}
+.act-btn:hover{background:var(--blue2);transform:translateY(-1px)}
+.act-btn.ghost{background:rgba(255,255,255,.05);border:1px solid var(--bdr2);color:var(--text)}
+.act-btn.ghost:hover{background:rgba(255,255,255,.09)}
+.act-btn.danger{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:var(--red)}
+.act-btn.danger:hover{background:rgba(248,113,113,.2)}
+
+/* List cards */
+.list-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.lc-head{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.lc-head-title{font-size:13.5px;font-weight:700;color:var(--text)}
+.lc-body{padding:0}
+.lc-item{
+  display:flex;align-items:center;gap:14px;padding:14px 20px;
+  border-bottom:1px solid var(--bdr);transition:background .12s;
+}
+.lc-item:last-child{border-bottom:none}
+.lc-item:hover{background:rgba(255,255,255,.02)}
+.lc-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent)}
+.lc-info{flex:1;min-width:0}
+.lc-name{font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-meta{font-size:12px;color:var(--muted);margin-top:1px}
+.lc-actions{display:flex;gap:6px}
+
+/* Badge/pill */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700}
+.pill-blue{background:rgba(88,101,242,.15);color:var(--accent)}
+.pill-green{background:rgba(52,211,153,.1);color:var(--green)}
+.pill-yellow{background:rgba(251,191,36,.1);color:var(--yellow)}
+.pill-red{background:rgba(248,113,113,.1);color:var(--red)}
+.pill-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* Form modal */
+.form-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);z-index:500;align-items:center;justify-content:center;padding:20px}
+.form-overlay.open{display:flex;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.form-box{background:var(--bg2);border:1px solid var(--bdr2);border-radius:16px;padding:28px;max-width:500px;width:100%;animation:formIn .25s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes formIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.form-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.form-input,.form-textarea,.form-select{
+  width:100%;padding:10px 14px;
+  background:var(--bg3);border:1px solid var(--bdr2);border-radius:9px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  transition:border-color .15s;outline:none;
+}
+.form-textarea{resize:vertical;min-height:90px}
+.form-select option{background:var(--bg3)}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--blue)}
+.form-row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* Announcements */
+.ann-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;padding:22px;margin-bottom:14px;transition:border-color .15s}
+.ann-card:hover{border-color:var(--bdr2)}
+.ann-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ann-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
+.ann-body{font-size:14px;color:var(--muted2);line-height:1.7;margin-bottom:12px}
+.ann-foot{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+.ann-foot i{font-size:11px}
+
+/* Notes */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.note-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;padding:18px;transition:border-color .15s;cursor:pointer}
+.note-card:hover{border-color:var(--bdr2)}
+.note-title{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:8px}
+.note-body{font-size:13px;color:var(--muted2);line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.note-date{font-size:11px;color:var(--muted);margin-top:10px}
+
+/* Bewerbungen */
+.bew-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:14px}
+.bew-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.bew-av{width:42px;height:42px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--accent);flex-shrink:0}
+.bew-name{font-size:14.5px;font-weight:700;color:var(--text)}
+.bew-disc{font-size:12.5px;color:var(--muted);margin-top:2px}
+.bew-q{margin-bottom:10px}
+.bew-q-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.bew-q-ans{font-size:13.5px;color:var(--muted2);line-height:1.6}
+.bew-actions{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--bdr)}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty i{font-size:36px;margin-bottom:14px;opacity:.4}
+.empty p{font-size:14px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:10px}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .content{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="lb-logo-wrap">
+      <div class="lb-glow"></div>
+      <img class="lb-logo" src="https://werner-max.de/berger.png" alt="MB" onerror="this.style.display='none'">
+    </div>
+    <div class="lb-title">Team Panel</div>
+    <p class="lb-sub">Melde dich mit deinem Discord-Account an, um auf das Max Berger Team Panel zuzugreifen.</p>
+    <div class="lb-err" id="lb-err"><i class="fa-solid fa-circle-exclamation"></i><span id="lb-err-msg">Fehler.</span></div>
+    <a href="/auth/discord" class="lb-btn" id="lb-btn"><i class="fa-brands fa-discord"></i> Mit Discord anmelden</a>
+    <div class="lb-sep"><div class="lb-sep-l"></div><span>Nur für Teammitglieder</span><div class="lb-sep-l"></div></div>
+    <p class="lb-note">Noch kein Teammitglied? Bewirb dich auf unserem <a href="https://discord.gg/mvAAC9Wyp8" target="_blank">Discord Server</a>.</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="tb-left">
+      <img class="tb-logo" src="https://werner-max.de/berger.png" alt="MB" onerror="this.style.display='none'">
+      <span class="tb-name">Max Berger</span>
+      <span class="tb-badge">Team Panel</span>
+    </div>
+    <div class="tb-right">
+      <div class="tb-user">
+        <img class="tb-av" id="tb-av" src="" alt="">
+        <span class="tb-uname" id="tb-uname"></span>
+      </div>
+      <button class="tb-logout" onclick="logout()" title="Abmelden"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-label">Übersicht</div>
+        <div class="sb-item active" onclick="showView('dashboard')"><i class="fa-solid fa-house"></i> Dashboard</div>
+        <div class="sb-item" onclick="showView('mitglieder')"><i class="fa-solid fa-users"></i> Mitglieder</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Verwaltung</div>
+        <div class="sb-item" onclick="showView('ankuendigungen')"><i class="fa-solid fa-bullhorn"></i> Ankündigungen</div>
+        <div class="sb-item" onclick="showView('bewerbungen')"><i class="fa-solid fa-file-pen"></i> Bewerbungen <span class="sb-badge" id="bew-badge" style="display:none">0</span></div>
+        <div class="sb-item" onclick="showView('notizen')"><i class="fa-solid fa-note-sticky"></i> Notizen</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Links</div>
+        <a class="sb-item" href="https://discord.gg/mvAAC9Wyp8" target="_blank"><i class="fa-brands fa-discord"></i> Discord</a>
+        <a class="sb-item" href="https://werner-max.de" target="_blank"><i class="fa-solid fa-globe"></i> Website</a>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="view-header">
+          <div><div class="view-title">Dashboard</div><div class="view-sub">Willkommen zurück! Hier ist deine Übersicht.</div></div>
+        </div>
+        <div class="stats-row">
+          <div class="s-card"><div class="s-card-ico ico-green"><i class="fa-solid fa-circle-dot"></i></div><div class="s-card-val" id="dash-online">—</div><div class="s-card-lbl">Online</div></div>
+          <div class="s-card"><div class="s-card-ico ico-blue"><i class="fa-solid fa-users"></i></div><div class="s-card-val" id="dash-total">—</div><div class="s-card-lbl">Mitglieder</div></div>
+          <div class="s-card"><div class="s-card-ico ico-yellow"><i class="fa-solid fa-bullhorn"></i></div><div class="s-card-val" id="dash-ann">0</div><div class="s-card-lbl">Ankündigungen</div></div>
+          <div class="s-card"><div class="s-card-ico ico-red"><i class="fa-solid fa-file-pen"></i></div><div class="s-card-val" id="dash-bew">0</div><div class="s-card-lbl">Bewerbungen</div></div>
+        </div>
+        <div class="list-card">
+          <div class="lc-head"><span class="lc-head-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent);margin-right:7px"></i>Letzte Ankündigungen</span><button class="act-btn ghost" onclick="showView('ankuendigungen')" style="font-size:12px;padding:6px 12px">Alle anzeigen</button></div>
+          <div id="dash-ann-list"><div class="empty"><i class="fa-solid fa-bullhorn"></i><p>Noch keine Ankündigungen</p></div></div>
+        </div>
+      </div>
+
+      <!-- MITGLIEDER -->
+      <div class="view" id="view-mitglieder">
+        <div class="view-header">
+          <div><div class="view-title">Mitglieder</div><div class="view-sub">Discord Server Mitglieder</div></div>
+        </div>
+        <div class="list-card">
+          <div class="lc-head">
+            <span class="lc-head-title"><i class="fa-brands fa-discord" style="color:#7289da;margin-right:7px"></i>Online Mitglieder</span>
+            <span class="pill pill-green"><span class="pill-dot"></span><span id="mit-online">—</span> online</span>
+          </div>
+          <div id="mit-list">
+            <div style="padding:20px;text-align:center"><iframe src="https://discord.com/widget?id=1470394456128880840&theme=dark" width="100%" height="380" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" style="border-radius:10px"></iframe></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANKÜNDIGUNGEN -->
+      <div class="view" id="view-ankuendigungen">
+        <div class="view-header">
+          <div><div class="view-title">Ankündigungen</div><div class="view-sub">Erstelle und verwalte Ankündigungen für dein Team</div></div>
+          <button class="act-btn" onclick="openForm('ann')"><i class="fa-solid fa-plus"></i> Neue Ankündigung</button>
+        </div>
+        <div id="ann-list"><div class="empty"><i class="fa-solid fa-bullhorn"></i><p>Noch keine Ankündigungen. Erstelle die erste!</p></div></div>
+      </div>
+
+      <!-- BEWERBUNGEN -->
+      <div class="view" id="view-bewerbungen">
+        <div class="view-header">
+          <div><div class="view-title">Bewerbungen</div><div class="view-sub">Eingehende Team-Bewerbungen</div></div>
+          <div style="display:flex;gap:8px">
+            <a href="https://werner-max.de/bewerbung.html" target="_blank" class="act-btn ghost"><i class="fa-solid fa-link"></i> Bewerbungslink</a>
+          </div>
+        </div>
+        <div id="bew-list"><div class="empty"><i class="fa-solid fa-file-pen"></i><p>Noch keine Bewerbungen eingegangen</p></div></div>
+      </div>
+
+      <!-- NOTIZEN -->
+      <div class="view" id="view-notizen">
+        <div class="view-header">
+          <div><div class="view-title">Notizen</div><div class="view-sub">Persönliche Team-Notizen</div></div>
+          <button class="act-btn" onclick="openForm('note')"><i class="fa-solid fa-plus"></i> Neue Notiz</button>
+        </div>
+        <div class="notes-grid" id="note-list"><div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-note-sticky"></i><p>Noch keine Notizen. Erstelle die erste!</p></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FORM: ANKÜNDIGUNG -->
+<div class="form-overlay" id="form-ann">
+  <div class="form-box">
+    <div class="form-title"><i class="fa-solid fa-bullhorn" style="color:var(--accent);margin-right:9px"></i>Neue Ankündigung</div>
+    <div class="form-group"><label class="form-label">Titel</label><input class="form-input" id="ann-title-inp" placeholder="Ankündigungs-Titel..."></div>
+    <div class="form-group"><label class="form-label">Inhalt</label><textarea class="form-textarea" id="ann-body-inp" placeholder="Nachricht an dein Team..."></textarea></div>
+    <div class="form-group"><label class="form-label">Priorität</label>
+      <select class="form-select" id="ann-prio-inp">
+        <option value="normal">Normal</option>
+        <option value="wichtig">Wichtig</option>
+        <option value="dringend">Dringend</option>
+      </select>
+    </div>
+    <div class="form-row"><button class="act-btn ghost" onclick="closeForm('ann')">Abbrechen</button><button class="act-btn" onclick="saveAnn()"><i class="fa-solid fa-check"></i> Speichern</button></div>
+  </div>
+</div>
+
+<!-- FORM: NOTIZ -->
+<div class="form-overlay" id="form-note">
+  <div class="form-box">
+    <div class="form-title"><i class="fa-solid fa-note-sticky" style="color:var(--accent);margin-right:9px"></i>Neue Notiz</div>
+    <div class="form-group"><label class="form-label">Titel</label><input class="form-input" id="note-title-inp" placeholder="Notiz-Titel..."></div>
+    <div class="form-group"><label class="form-label">Inhalt</label><textarea class="form-textarea" id="note-body-inp" placeholder="Deine Notiz..." style="min-height:120px"></textarea></div>
+    <div class="form-row"><button class="act-btn ghost" onclick="closeForm('note')">Abbrechen</button><button class="act-btn" onclick="saveNote()"><i class="fa-solid fa-check"></i> Speichern</button></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let announcements = JSON.parse(localStorage.getItem('mb_ann') || '[]');
+let notes = JSON.parse(localStorage.getItem('mb_notes') || '[]');
+let applications = JSON.parse(localStorage.getItem('mb_bew') || '[]');
+let currentUser = null;
+
+// ── INIT ──
+const params = new URLSearchParams(location.search);
+if(params.get('error')==='kein_zugang'){showErr('⚠️ Kein Zugang – du bist kein Teammitglied.')}
+else if(params.get('error')){showErr('❌ Fehler beim Anmelden. Bitte erneut versuchen.')}
+
+function showErr(msg){
+  document.getElementById('lb-err').classList.add('show');
+  document.getElementById('lb-err-msg').textContent = msg;
+}
+
+document.getElementById('lb-btn').addEventListener('click',function(){
+  this.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Verbinde...';
+});
+
+async function init(){
+  try{
+    const res = await fetch('/api/me');
+    const data = await res.json();
+    if(data.loggedIn){
+      currentUser = data.user;
+      showApp();
+    }
+  }catch(e){}
+}
+
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('show');
+  document.getElementById('tb-av').src = currentUser.avatar;
+  document.getElementById('tb-uname').textContent = currentUser.global_name || currentUser.username;
+  loadDiscordStats();
+  renderAll();
+}
+
+function logout(){ window.location.href='/auth/logout'; }
+
+// ── DISCORD STATS ──
+async function loadDiscordStats(){
+  try{
+    const r = await fetch('https://discord.com/api/v10/invites/mvAAC9Wyp8?with_counts=true');
+    const d = await r.json();
+    const on = d.approximate_presence_count||0;
+    const tot = d.approximate_member_count||0;
+    document.getElementById('dash-online').textContent = on;
+    document.getElementById('dash-total').textContent = tot;
+    document.getElementById('mit-online').textContent = on;
+  }catch{}
+}
+setInterval(loadDiscordStats, 30000);
+
+// ── NAVIGATION ──
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(s=>{
+    if(s.getAttribute('onclick')&&s.getAttribute('onclick').includes("'"+id+"'"))s.classList.add('active');
+  });
+}
+
+// ── FORMS ──
+function openForm(type){ document.getElementById('form-'+type).classList.add('open'); }
+function closeForm(type){ document.getElementById('form-'+type).classList.remove('open'); }
+document.querySelectorAll('.form-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+
+// ── ANKÜNDIGUNGEN ──
+function saveAnn(){
+  const title = document.getElementById('ann-title-inp').value.trim();
+  const body  = document.getElementById('ann-body-inp').value.trim();
+  const prio  = document.getElementById('ann-prio-inp').value;
+  if(!title||!body) return;
+  announcements.unshift({id:Date.now(),title,body,prio,author:currentUser.global_name||currentUser.username,date:new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})});
+  localStorage.setItem('mb_ann',JSON.stringify(announcements));
+  document.getElementById('ann-title-inp').value='';
+  document.getElementById('ann-body-inp').value='';
+  closeForm('ann');
+  renderAnn();
+}
+
+function deleteAnn(id){
+  announcements = announcements.filter(a=>a.id!==id);
+  localStorage.setItem('mb_ann',JSON.stringify(announcements));
+  renderAnn();
+}
+
+function renderAnn(){
+  const list = document.getElementById('ann-list');
+  const dash = document.getElementById('dash-ann-list');
+  document.getElementById('dash-ann').textContent = announcements.length;
+  if(!announcements.length){
+    list.innerHTML='<div class="empty"><i class="fa-solid fa-bullhorn"></i><p>Noch keine Ankündigungen. Erstelle die erste!</p></div>';
+    dash.innerHTML='<div class="empty"><i class="fa-solid fa-bullhorn"></i><p>Noch keine Ankündigungen</p></div>';
+    return;
+  }
+  const pillMap={normal:'pill-blue',wichtig:'pill-yellow',dringend:'pill-red'};
+  const iconMap={normal:'fa-circle-info',wichtig:'fa-triangle-exclamation',dringend:'fa-circle-exclamation'};
+  list.innerHTML = announcements.map(a=>`
+    <div class="ann-card">
+      <div class="ann-top">
+        <div class="ann-title">${a.title}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="pill ${pillMap[a.prio]||'pill-blue'}"><i class="fa-solid ${iconMap[a.prio]||'fa-circle-info'}"></i>${a.prio.charAt(0).toUpperCase()+a.prio.slice(1)}</span>
+          <button class="act-btn danger" onclick="deleteAnn(${a.id})" style="padding:5px 10px;font-size:11px"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="ann-body">${a.body.replace(/\n/g,'<br>')}</div>
+      <div class="ann-foot"><i class="fa-solid fa-user"></i>${a.author} &nbsp;·&nbsp; <i class="fa-solid fa-clock"></i>${a.date}</div>
+    </div>
+  `).join('');
+  dash.innerHTML = announcements.slice(0,3).map(a=>`
+    <div class="lc-item">
+      <div class="lc-av"><i class="fa-solid fa-bullhorn"></i></div>
+      <div class="lc-info"><div class="lc-name">${a.title}</div><div class="lc-meta">${a.author} · ${a.date}</div></div>
+      <span class="pill ${pillMap[a.prio]||'pill-blue'}">${a.prio}</span>
+    </div>
+  `).join('');
+}
+
+// ── NOTIZEN ──
+function saveNote(){
+  const title = document.getElementById('note-title-inp').value.trim();
+  const body  = document.getElementById('note-body-inp').value.trim();
+  if(!title||!body) return;
+  notes.unshift({id:Date.now(),title,body,author:currentUser.global_name||currentUser.username,date:new Date().toLocaleDateString('de-DE')});
+  localStorage.setItem('mb_notes',JSON.stringify(notes));
+  document.getElementById('note-title-inp').value='';
+  document.getElementById('note-body-inp').value='';
+  closeForm('note');
+  renderNotes();
+}
+
+function deleteNote(id){
+  notes = notes.filter(n=>n.id!==id);
+  localStorage.setItem('mb_notes',JSON.stringify(notes));
+  renderNotes();
+}
+
+function renderNotes(){
+  const grid = document.getElementById('note-list');
+  if(!notes.length){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-note-sticky"></i><p>Noch keine Notizen. Erstelle die erste!</p></div>';
+    return;
+  }
+  grid.innerHTML = notes.map(n=>`
+    <div class="note-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div class="note-title">${n.title}</div>
+        <button class="act-btn danger" onclick="deleteNote(${n.id})" style="padding:4px 8px;font-size:11px;flex-shrink:0;margin-left:8px"><i class="fa-solid fa-trash"></i></button>
+      </div>
+      <div class="note-body">${n.body}</div>
+      <div class="note-date"><i class="fa-solid fa-clock" style="margin-right:4px"></i>${n.date} · ${n.author}</div>
+    </div>
+  `).join('');
+}
+
+// ── BEWERBUNGEN ──
+function renderBew(){
+  const list = document.getElementById('bew-list');
+  const badge = document.getElementById('bew-badge');
+  const pending = applications.filter(b=>b.status==='offen');
+  document.getElementById('dash-bew').textContent = applications.length;
+  if(pending.length>0){badge.style.display='';badge.textContent=pending.length}else{badge.style.display='none'}
+  if(!applications.length){
+    list.innerHTML='<div class="empty"><i class="fa-solid fa-file-pen"></i><p>Noch keine Bewerbungen eingegangen</p></div>';
+    return;
+  }
+  list.innerHTML = applications.map(b=>`
+    <div class="bew-card">
+      <div class="bew-top">
+        <div class="bew-av">${b.name.charAt(0).toUpperCase()}</div>
+        <div><div class="bew-name">${b.name}</div><div class="bew-disc">@${b.discord} · ${b.date}</div></div>
+        <span class="pill ${b.status==='offen'?'pill-yellow':b.status==='angenommen'?'pill-green':'pill-red'}" style="margin-left:auto">${b.status}</span>
+      </div>
+      <div class="bew-q"><div class="bew-q-label">Alter</div><div class="bew-q-ans">${b.age}</div></div>
+      <div class="bew-q"><div class="bew-q-label">Warum Team?</div><div class="bew-q-ans">${b.reason}</div></div>
+      <div class="bew-q"><div class="bew-q-label">Erfahrung</div><div class="bew-q-ans">${b.experience}</div></div>
+      <div class="bew-actions">
+        ${b.status==='offen'?`
+          <button class="act-btn" onclick="setBewStatus(${b.id},'angenommen')"><i class="fa-solid fa-check"></i> Annehmen</button>
+          <button class="act-btn danger" onclick="setBewStatus(${b.id},'abgelehnt')"><i class="fa-solid fa-xmark"></i> Ablehnen</button>
+        `:''}
+        <button class="act-btn ghost" onclick="deleteBew(${b.id})" style="margin-left:auto"><i class="fa-solid fa-trash"></i> Löschen</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setBewStatus(id,status){
+  applications = applications.map(b=>b.id===id?{...b,status}:b);
+  localStorage.setItem('mb_bew',JSON.stringify(applications));
+  renderBew();
+}
+function deleteBew(id){
+  applications = applications.filter(b=>b.id!==id);
+  localStorage.setItem('mb_bew',JSON.stringify(applications));
+  renderBew();
+}
+
+function renderAll(){ renderAnn(); renderNotes(); renderBew(); }
+
+// URL Bewerbung empfangen
+const bewData = params.get('bew');
+if(bewData){
+  try{
+    const b = JSON.parse(atob(bewData));
+    b.id = Date.now(); b.status='offen'; b.date=new Date().toLocaleDateString('de-DE');
+    applications.unshift(b);
+    localStorage.setItem('mb_bew',JSON.stringify(applications));
+  }catch{}
+}
+
+init();
+</script>
+</body>
+</html>
